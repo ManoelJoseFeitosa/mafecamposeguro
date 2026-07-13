@@ -27,11 +27,18 @@ class MissaoControlador extends Controlador
      * sincronização "pull" quando há conectividade — ver
      * codigo-fonte/servicos/sincronizacaoServico.ts.
      */
-    public function listar(): JsonResponse
+    public function listar(Request $requisicao): JsonResponse
     {
-        $missoes = Missao::orderByDesc('created_at')->get();
+        $consulta = Missao::with('colaborador')->orderByDesc('created_at');
 
-        $resultado = $missoes->map(function (Missao $missao) {
+        // Filtro opcional por colaborador. O app móvel offline-first, na prática,
+        // baixa todas as missões e filtra "as minhas" localmente (para funcionar
+        // sem rede depois); este parâmetro existe para consultas pontuais online.
+        if ($requisicao->filled('colaboradorId')) {
+            $consulta->where('colaborador_id', (int) $requisicao->query('colaboradorId'));
+        }
+
+        $resultado = $consulta->get()->map(function (Missao $missao) {
             $analise = $this->reanalisar($missao);
             $pontos = $this->pontosDeApoio->buscar($missao->latitude, $missao->longitude);
 
@@ -41,6 +48,8 @@ class MissaoControlador extends Controlador
                 'divisao' => $missao->divisao,
                 'latitude' => $missao->latitude,
                 'longitude' => $missao->longitude,
+                'colaboradorId' => $missao->colaborador_id,
+                'colaboradorNome' => $missao->colaborador?->nome,
                 'analise' => $analise,
                 'pontosDeApoio' => $pontos,
                 'atualizadoEm' => $missao->updated_at?->toIso8601String(),
@@ -62,6 +71,9 @@ class MissaoControlador extends Controlador
             'tempoExposicaoHoras' => ['nullable', 'numeric', 'min:1', 'max:24'],
             'climaSevero' => ['nullable', 'boolean'],
             'historicoAcidentesLocal' => ['nullable', 'integer', 'min:0'],
+            // Colaborador atribuído. Opcional: o gestor informa ao gerar a missão
+            // no painel; missões criadas direto no app (sem atribuição) ficam nulas.
+            'colaboradorId' => ['nullable', 'integer', 'exists:usuarios,id'],
         ]);
 
         $tempoExposicao = (float) ($dados['tempoExposicaoHoras'] ?? 4.0);
@@ -77,6 +89,7 @@ class MissaoControlador extends Controlador
         );
 
         $missao = Missao::create([
+            'colaborador_id' => $dados['colaboradorId'] ?? null,
             'divisao' => $dados['divisao'],
             'atividade' => $dados['atividade'],
             'ambiente' => $dados['ambiente'],
@@ -96,6 +109,8 @@ class MissaoControlador extends Controlador
             'id' => $missao->id,
             'projeto' => $missao->projeto,
             'divisao' => $missao->divisao,
+            'colaboradorId' => $missao->colaborador_id,
+            'colaboradorNome' => $missao->colaborador?->nome,
             'analise' => $analise,
             'pontosDeApoio' => $pontos,
         ], RespostaHttp::HTTP_CREATED);

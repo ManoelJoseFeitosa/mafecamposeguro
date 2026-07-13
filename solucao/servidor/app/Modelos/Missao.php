@@ -4,6 +4,7 @@ namespace App\Modelos;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Missao extends Model
@@ -13,6 +14,7 @@ class Missao extends Model
     protected $table = 'missoes';
 
     protected $fillable = [
+        'colaborador_id',
         'divisao',
         'atividade',
         'ambiente',
@@ -38,5 +40,11 @@ class Missao extends Model
     public function relatoriosQuaseAcidente(): HasMany
     {
         return $this->hasMany(RelatorioQuaseAcidente::class);
+    }
+
+    /** Colaborador (usuário de campo) responsável pela missão. */
+    public function colaborador(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'colaborador_id');
     }
 }

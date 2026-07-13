@@ -3,15 +3,19 @@ import {
   buscarIndicadores,
   criarMissao,
   listarCatalogo,
+  listarColaboradores,
   logout,
   UsuarioAutenticado,
   usuarioAtual,
   urlRelatorioDocx,
   urlRelatorioPdf,
 } from "./cliente-api";
+import GerenciarUsuarios from "./componentes/GerenciarUsuarios";
 import PainelIndicadores from "./componentes/PainelIndicadores";
 import TelaLogin from "./componentes/TelaLogin";
-import { Indicadores, RespostaMissao } from "./tipos";
+import { Colaborador, Indicadores, RespostaMissao } from "./tipos";
+
+type Aba = "missoes" | "usuarios";
 
 const corDoNivel = (nivel: number) => {
   if (nivel <= 2) return "#2e7d32";
@@ -22,9 +26,11 @@ const corDoNivel = (nivel: number) => {
 
 export default function Aplicativo() {
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(() => usuarioAtual());
+  const [aba, setAba] = useState<Aba>("missoes");
   const [divisoes, setDivisoes] = useState<string[]>([]);
   const [atividades, setAtividades] = useState<string[]>([]);
   const [ambientes, setAmbientes] = useState<string[]>([]);
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [indicadores, setIndicadores] = useState<Indicadores | null>(null);
   const [resultado, setResultado] = useState<RespostaMissao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -40,6 +46,7 @@ export default function Aplicativo() {
     tempoExposicaoHoras: 4,
     climaSevero: false,
     historicoAcidentesLocal: 0,
+    colaboradorId: null as number | null,
   });
 
   useEffect(() => {
@@ -58,7 +65,10 @@ export default function Aplicativo() {
   }, []);
 
   useEffect(() => {
-    if (usuario) recarregarIndicadores();
+    if (usuario) {
+      recarregarIndicadores();
+      listarColaboradores().then(setColaboradores).catch(() => setColaboradores([]));
+    }
   }, [usuario]);
 
   function recarregarIndicadores() {
@@ -107,11 +117,33 @@ export default function Aplicativo() {
             </button>
           </div>
         </div>
+        <nav className="abas">
+          <button
+            type="button"
+            className={aba === "missoes" ? "aba aba--ativa" : "aba"}
+            onClick={() => setAba("missoes")}
+          >
+            Missões e riscos
+          </button>
+          <button
+            type="button"
+            className={aba === "usuarios" ? "aba aba--ativa" : "aba"}
+            onClick={() => setAba("usuarios")}
+          >
+            Usuários
+          </button>
+        </nav>
       </header>
 
-      {indicadores && <PainelIndicadores indicadores={indicadores} />}
+      {aba === "usuarios" ? (
+        <main className="conteudo-principal conteudo-principal--unico">
+          <GerenciarUsuarios perfilAtual={usuario.perfil} />
+        </main>
+      ) : (
+        <>
+          {indicadores && <PainelIndicadores indicadores={indicadores} />}
 
-      <main className="conteudo-principal">
+          <main className="conteudo-principal">
         <form onSubmit={aoEnviar} className="formulario-missao">
           <h2>Nova missão de campo</h2>
 
@@ -137,6 +169,28 @@ export default function Aplicativo() {
               placeholder="Ex.: Mapeamento geológico - Serra do Espinhaço"
               required
             />
+          </label>
+
+          <label>
+            Colaborador responsável (campo)
+            <select
+              value={formulario.colaboradorId ?? ""}
+              onChange={(e) =>
+                setFormulario({
+                  ...formulario,
+                  colaboradorId: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+            >
+              <option value="">Sem atribuição (definir depois)</option>
+              {colaboradores.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nome}
+                  {c.matricula ? ` — ${c.matricula}` : ""}
+                  {c.cargo ? ` (${c.cargo})` : ""}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
@@ -200,6 +254,15 @@ export default function Aplicativo() {
           {resultado && (
             <div className="cartao-resultado">
               <p>
+                <strong>Projeto:</strong> {resultado.projeto}
+                {resultado.colaboradorNome && (
+                  <>
+                    {" — "}
+                    <strong>Responsável:</strong> {resultado.colaboradorNome}
+                  </>
+                )}
+              </p>
+              <p>
                 <strong>Nível de risco:</strong>{" "}
                 <span
                   className="etiqueta-nivel"
@@ -252,7 +315,9 @@ export default function Aplicativo() {
             </div>
           )}
         </div>
-      </main>
+          </main>
+        </>
+      )}
     </div>
   );
 }

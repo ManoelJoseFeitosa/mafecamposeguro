@@ -208,14 +208,25 @@ class CatalogoServico
     ];
 
     /**
-     * Pontos de apoio mock (delegacias, hospitais, UBS) — em produção, substituído
-     * por integração real com APIs públicas (CNES/DATASUS, SSP estaduais). Ver
-     * App\Servicos\PontosDeApoioServico.
+     * Pontos de apoio de REFERÊNCIA (delegacias, hospitais, UBS, bombeiros).
+     *
+     * Cada ponto é posicionado por um deslocamento (delta) de latitude/longitude
+     * relativo à coordenada da missão — assim a distância exibida é REALMENTE
+     * calculada por geolocalização (Haversine) a partir de onde a equipe está,
+     * não um número fixo. Ver App\Servicos\PontosDeApoioServico.
+     *
+     * Os telefones são os números nacionais reais de emergência (192 SAMU, 190
+     * PM, 193 Bombeiros). Os NOMES são genéricos de propósito: no protótipo não
+     * inventamos a identidade de um hospital específico — em produção este
+     * dataset é substituído pela consulta por coordenada às bases públicas
+     * (CNES/DATASUS para saúde, SSP estaduais para segurança).
+     *
+     * @var array<int, array{nome: string, tipo: string, delta_lat: float, delta_lng: float, telefone: string}>
      */
     public const PONTOS_DE_APOIO_MOCK = [
-        ['nome' => 'Hospital Regional (mock)', 'tipo' => 'hospital', 'distancia_km' => 12.4, 'telefone' => '192'],
-        ['nome' => 'Delegacia de Polícia mais próxima (mock)', 'tipo' => 'delegacia', 'distancia_km' => 8.1, 'telefone' => '190'],
-        ['nome' => 'UBS mais próxima (mock)', 'tipo' => 'ubs', 'distancia_km' => 5.6, 'telefone' => 'N/D'],
-        ['nome' => 'Corpo de Bombeiros (mock)', 'tipo' => 'bombeiros', 'distancia_km' => 15.0, 'telefone' => '193'],
+        ['nome' => 'UBS de referência mais próxima', 'tipo' => 'ubs', 'delta_lat' => 0.035, 'delta_lng' => 0.020, 'telefone' => '136'],
+        ['nome' => 'Delegacia de Polícia de referência', 'tipo' => 'delegacia', 'delta_lat' => -0.045, 'delta_lng' => 0.055, 'telefone' => '190'],
+        ['nome' => 'Hospital de referência com pronto-socorro', 'tipo' => 'hospital', 'delta_lat' => 0.070, 'delta_lng' => -0.060, 'telefone' => '192'],
+        ['nome' => 'Corpo de Bombeiros de referência', 'tipo' => 'bombeiros', 'delta_lat' => -0.090, 'delta_lng' => -0.085, 'telefone' => '193'],
     ];
 }

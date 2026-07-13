@@ -10,6 +10,10 @@ return new class extends Migration
     {
         Schema::create('missoes', function (Blueprint $tabela) {
             $tabela->id();
+            // Colaborador (usuário de campo) responsável pela missão. Nulo quando
+            // a missão foi criada solta (ex.: no protótipo antigo, sem atribuição).
+            // O gestor atribui um colaborador ao gerar a missão no painel web.
+            $tabela->foreignId('colaborador_id')->nullable()->constrained('usuarios')->nullOnDelete();
             $tabela->string('divisao');
             $tabela->string('atividade');
             $tabela->string('ambiente');

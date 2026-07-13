@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>MAFE Campo Seguro — Segurança nas Saídas de Campo</title>
-        <meta name="description" content="MAFE Campo Seguro — gerenciamento de risco ocupacional e definição automatizada de EPIs para saídas de campo. Proposta CPSI nº 0001/2026, CPRM/SGB.">
+        <meta name="description" content="MAFE Campo Seguro — gerenciamento de risco ocupacional e definição automatizada de EPIs para saídas de campo.">
 
         <style>
             :root {
@@ -199,32 +199,37 @@
             .cartao-recurso h3 { font-size: 15px; margin: 0 0 8px; }
             .cartao-recurso p { font-size: 13.5px; color: var(--texto-suave); line-height: 1.5; margin: 0; }
 
-            .faixa-status {
-                display: flex;
+            .baixar-app {
+                display: grid;
+                grid-template-columns: 1.4fr 0.6fr;
+                gap: 40px;
                 align-items: center;
-                justify-content: space-between;
-                gap: 16px;
-                flex-wrap: wrap;
-                background: var(--azul-painel);
+                background: linear-gradient(160deg, var(--azul-painel), #0c1526);
                 border: 1px solid var(--azul-borda);
-                border-radius: 14px;
-                padding: 18px 24px;
+                border-radius: 20px;
+                padding: 40px;
                 margin-bottom: 48px;
-                font-size: 13.5px;
+            }
+            .baixar-app h2 { font-size: clamp(22px, 3vw, 30px); margin: 0 0 14px; }
+            .baixar-app p { color: var(--texto-suave); font-size: 15px; line-height: 1.6; margin: 0 0 18px; max-width: 52ch; }
+            .passos-instalar {
+                margin: 0 0 22px;
+                padding-left: 20px;
                 color: var(--texto-suave);
+                font-size: 14px;
+                line-height: 1.7;
             }
-
-            .ponto-status {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                font-weight: 600;
+            .passos-instalar strong { color: var(--texto-claro); }
+            .passos-instalar code, .baixar-app code {
+                background: rgba(245,165,36,0.12);
+                color: var(--ambar-forte);
+                padding: 1px 6px;
+                border-radius: 5px;
+                font-size: 12.5px;
             }
-            .bolinha {
-                width: 9px; height: 9px; border-radius: 999px;
-                background: var(--texto-suave);
-            }
-            .bolinha.ok { background: var(--verde-ok); box-shadow: 0 0 0 4px rgba(52,211,153,0.15); }
+            .nota-app { font-size: 12.5px; margin-top: 14px !important; }
+            .baixar-app__celular { display: flex; justify-content: center; }
+            .baixar-app__celular svg { width: 100%; max-width: 150px; }
 
             footer {
                 border-top: 1px solid var(--azul-borda);
@@ -241,6 +246,9 @@
                 .hero { grid-template-columns: 1fr; }
                 .grade-recursos { grid-template-columns: 1fr; }
                 .cartao-escudo { order: -1; padding: 26px; }
+                .baixar-app { grid-template-columns: 1fr; padding: 28px; }
+                .baixar-app__celular { order: -1; }
+                .baixar-app__celular svg { max-width: 110px; }
             }
         </style>
     </head>
@@ -257,12 +265,12 @@
                     </svg>
                     <div class="marca-texto">
                         <strong>MAFE Campo Seguro</strong>
-                        <span>Proposta CPSI nº 0001/2026 · CPRM/SGB</span>
+                        <span></span>
                     </div>
                 </div>
                 <nav>
-                    <a class="botao-secundario" href="{{ url('/up') }}">Status da API</a>
-                    <a class="botao-primario" href="http://localhost:5173">Acessar o Painel</a>
+                    <a class="botao-secundario" href="{{ config('mafe.url_painel_gestor') }}">Painel do Gestor</a>
+                    <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">Baixar o app (Android)</a>
                 </nav>
             </header>
 
@@ -277,8 +285,8 @@
                         relatório pronto para assinatura, tudo antes de a equipe deixar a base.
                     </p>
                     <div class="hero-acoes">
-                        <a class="botao-primario" href="http://localhost:5173">Entrar no Painel do Gestor</a>
-                        <a class="botao-secundario" href="https://github.com/ManoelJoseFeitosa" target="_blank" rel="noreferrer">Ver o código-fonte</a>
+                        <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">↓ Baixar o app Android</a>
+                        <a class="botao-secundario" href="{{ config('mafe.url_painel_gestor') }}">Painel do Gestor</a>
                     </div>
                 </div>
                 <div class="cartao-escudo">
@@ -336,15 +344,41 @@
                 </div>
             </section>
 
-            <div class="faixa-status">
-                <span class="ponto-status"><span class="bolinha ok"></span> API respondendo em {{ url('/up') }}</span>
-                <span>Laravel {{ app()->version() }} · PHP {{ PHP_VERSION }}</span>
-                <span>Painel do gestor em <code>http://localhost:5173</code> (ambiente de desenvolvimento)</span>
-            </div>
+            <section class="baixar-app" id="baixar">
+                <div class="baixar-app__texto">
+                    <span class="selo">Aplicativo de campo · Android</span>
+                    <h2>Leve o MAFE Campo Seguro para o campo</h2>
+                    <p>
+                        Instale o aplicativo no celular da equipe: registre missões com o GPS,
+                        consulte EPIs e pontos de apoio e trabalhe <strong>mesmo sem internet</strong> —
+                        a sincronização acontece sozinha quando a conexão volta.
+                    </p>
+                    <ol class="passos-instalar">
+                        <li>Toque em <strong>Baixar o app</strong> abaixo para salvar o arquivo <code>.apk</code>.</li>
+                        <li>Ao abrir, o Android pode pedir para <strong>permitir instalar de esta fonte</strong> — confirme.</li>
+                        <li>Conclua a instalação e abra o app; escolha seu nome para começar.</li>
+                    </ol>
+                    <div class="hero-acoes">
+                        <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">↓ Baixar o app Android (.apk)</a>
+                    </div>
+                    <p class="nota-app">Compatível com Android. Para iPhone, use o Painel do Gestor pelo navegador.</p>
+                </div>
+                <div class="baixar-app__celular" aria-hidden="true">
+                    <svg viewBox="0 0 150 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="12" y="6" width="126" height="288" rx="22" fill="#0c1526" stroke="#22314d" stroke-width="2"/>
+                        <rect x="20" y="26" width="110" height="248" rx="10" fill="#101b30"/>
+                        <circle cx="75" cy="16" r="2.4" fill="#22314d"/>
+                        <path d="M55 150 L70 165 L98 122" stroke="#34d399" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="75" cy="143" r="42" stroke="#f5a524" stroke-opacity="0.35" stroke-width="2"/>
+                        <rect x="34" y="210" width="82" height="9" rx="4.5" fill="#22314d"/>
+                        <rect x="34" y="228" width="60" height="9" rx="4.5" fill="#22314d"/>
+                    </svg>
+                </div>
+            </section>
 
             <footer>
-                <span>MAFE Campo Seguro — protótipo para o Edital nº 0001 - CPSI/2026, CPRM/SGB.</span>
-                <span>Manoel José Feitosa Neto · CNPJ 61.777.358/0001-10</span>
+                <span>MAFE Campo Seguro — Segurança nas Saídas de Campo </span>
+                <span>MaFe Sistemas</span>
             </footer>
         </div>
     </body>
