@@ -245,9 +245,112 @@ ul {
   border-radius: 10px;
 }
 
+/* Navegação por abas (Missões / Usuários) */
+.abas {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.aba {
+  background: transparent;
+  color: #555;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  padding: 10px 16px;
+  font-size: 14px;
+  width: auto;
+}
+
+.aba--ativa {
+  color: #1565c0;
+  border-bottom-color: #1565c0;
+}
+
+.conteudo-principal--unico {
+  grid-template-columns: 1fr;
+}
+
+/* Gestão de usuários */
+.gestao-usuarios {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 28px;
+  width: 100%;
+}
+
+.formulario-usuario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linha-dupla {
+  display: flex;
+  gap: 12px;
+}
+
+.texto-auxiliar {
+  color: #777;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.mensagem-sucesso {
+  color: #2e7d32;
+}
+
+.tabela-usuarios {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tabela-usuarios th,
+.tabela-usuarios td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.tabela-usuarios th {
+  color: #777;
+  font-size: 12px;
+}
+
+.linha-inativa {
+  opacity: 0.55;
+}
+
+.celula-acoes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.botao-secundario {
+  background: #eef3fb;
+  color: #1565c0;
+  padding: 6px 10px;
+  font-size: 12px;
+  width: auto;
+}
+
+.botao-perigo {
+  background: #fdecea;
+  color: #c62828;
+  padding: 6px 10px;
+  font-size: 12px;
+  width: auto;
+}
+
 /* Responsividade — celular e telas estreitas: layout de 2 colunas vira 1 coluna */
 @media (max-width: 720px) {
-  .conteudo-principal {
+  .conteudo-principal,
+  .gestao-usuarios {
     grid-template-columns: 1fr;
   }
 
@@ -261,5 +364,16 @@ ul {
 
   button {
     width: 100%;
+  }
+
+  .aba,
+  .botao-secundario,
+  .botao-perigo {
+    width: auto;
+  }
+
+  .tabela-usuarios {
+    display: block;
+    overflow-x: auto;
   }
 }

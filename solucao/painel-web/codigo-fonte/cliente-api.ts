@@ -1,4 +1,4 @@
-import { Indicadores, RespostaMissao } from "./tipos";
+import { Colaborador, Indicadores, PerfilUsuario, RespostaMissao, Usuario } from "./tipos";
 
 const BASE = "/api";
 const CHAVE_SESSAO = "cpsi2026.sessao";
@@ -7,7 +7,7 @@ export interface UsuarioAutenticado {
   id: number;
   nome: string;
   email: string;
-  perfil: "gestor" | "colaborador";
+  perfil: PerfilUsuario;
 }
 
 interface SessaoArmazenada {
@@ -80,6 +80,7 @@ export interface NovaMissaoPayload {
   tempoExposicaoHoras: number;
   climaSevero: boolean;
   historicoAcidentesLocal: number;
+  colaboradorId: number | null;
 }
 
 export async function criarMissao(payload: NovaMissaoPayload): Promise<RespostaMissao> {
@@ -118,4 +119,80 @@ export function urlRelatorioPdf(missaoId: number): string {
 
 export function urlRelatorioDocx(missaoId: number): string {
   return `${BASE}/missoes/${missaoId}/relatorio.docx`;
+}
+
+// ---------------------------------------------------------------------------
+// Gestão de usuários (super admin / gestor) e seletor de colaboradores.
+// ---------------------------------------------------------------------------
+
+/** Extrai a primeira mensagem de erro de validação do Laravel, se houver. */
+async function extrairMensagemErro(res: Response, padrao: string): Promise<string> {
+  try {
+    const corpo = await res.json();
+    if (corpo?.errors) {
+      const primeiro = Object.values(corpo.errors)[0];
+      if (Array.isArray(primeiro) && primeiro[0]) return String(primeiro[0]);
+    }
+    if (corpo?.mensagem) return String(corpo.mensagem);
+  } catch {
+    // corpo não-JSON: cai no padrão
+  }
+  return padrao;
+}
+
+export interface DadosUsuario {
+  nome: string;
+  email: string;
+  senha?: string;
+  perfil: PerfilUsuario;
+  matricula?: string | null;
+  cargo?: string | null;
+  telefone?: string | null;
+  ativo?: boolean;
+}
+
+export async function listarUsuarios(): Promise<Usuario[]> {
+  const res = await fetch(`${BASE}/usuarios`, {
+    headers: { ...cabecalhosAutenticados(), Accept: "application/json" },
+  });
+  if (res.status === 401) {
+    limparSessao();
+    throw new Error("Sessão expirada. Faça login novamente.");
+  }
+  if (!res.ok) throw new Error(await extrairMensagemErro(res, "Falha ao listar usuários."));
+  return res.json();
+}
+
+export async function criarUsuario(dados: DadosUsuario): Promise<Usuario> {
+  const res = await fetch(`${BASE}/usuarios`, {
+    method: "POST",
+    headers: { ...cabecalhosAutenticados(), "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(dados),
+  });
+  if (!res.ok) throw new Error(await extrairMensagemErro(res, "Falha ao criar usuário."));
+  return res.json();
+}
+
+export async function atualizarUsuario(id: number, dados: Partial<DadosUsuario>): Promise<Usuario> {
+  const res = await fetch(`${BASE}/usuarios/${id}`, {
+    method: "PUT",
+    headers: { ...cabecalhosAutenticados(), "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(dados),
+  });
+  if (!res.ok) throw new Error(await extrairMensagemErro(res, "Falha ao atualizar usuário."));
+  return res.json();
+}
+
+export async function removerUsuario(id: number): Promise<void> {
+  const res = await fetch(`${BASE}/usuarios/${id}`, {
+    method: "DELETE",
+    headers: { ...cabecalhosAutenticados(), Accept: "application/json" },
+  });
+  if (!res.ok) throw new Error(await extrairMensagemErro(res, "Falha ao remover usuário."));
+}
+
+export async function listarColaboradores(): Promise<Colaborador[]> {
+  const res = await fetch(`${BASE}/colaboradores`, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error("Falha ao listar colaboradores.");
+  return res.json();
 }

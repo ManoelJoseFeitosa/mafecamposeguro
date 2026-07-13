@@ -91,4 +91,32 @@ class MissaoApiTest extends TestCase
 
         $resposta->assertUnauthorized();
     }
+
+    public function test_missao_pode_ser_atribuida_a_um_colaborador(): void
+    {
+        $colaborador = Usuario::factory()->create([
+            'perfil' => 'colaborador',
+            'nome' => 'Ana Ribeiro',
+        ]);
+
+        $criacao = $this->postJson('/api/missoes', [
+            'divisao' => 'DIHIBA',
+            'projeto' => 'Expedição atribuída',
+            'atividade' => 'hidrometria_rio',
+            'ambiente' => 'rio_lago',
+            'latitude' => -14.2,
+            'longitude' => -42.7,
+            'colaboradorId' => $colaborador->id,
+        ]);
+
+        $criacao->assertCreated();
+        $criacao->assertJsonPath('colaboradorId', $colaborador->id);
+        $criacao->assertJsonPath('colaboradorNome', 'Ana Ribeiro');
+
+        // A listagem (pull do app) traz o colaborador para permitir o filtro
+        // "minhas missões" no dispositivo.
+        $lista = $this->getJson('/api/missoes');
+        $lista->assertJsonPath('0.colaboradorId', $colaborador->id);
+        $lista->assertJsonPath('0.colaboradorNome', 'Ana Ribeiro');
+    }
 }
