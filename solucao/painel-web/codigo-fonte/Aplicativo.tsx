@@ -1,0 +1,258 @@
+import { useEffect, useState } from "react";
+import {
+  buscarIndicadores,
+  criarMissao,
+  listarCatalogo,
+  logout,
+  UsuarioAutenticado,
+  usuarioAtual,
+  urlRelatorioDocx,
+  urlRelatorioPdf,
+} from "./cliente-api";
+import PainelIndicadores from "./componentes/PainelIndicadores";
+import TelaLogin from "./componentes/TelaLogin";
+import { Indicadores, RespostaMissao } from "./tipos";
+
+const corDoNivel = (nivel: number) => {
+  if (nivel <= 2) return "#2e7d32";
+  if (nivel <= 4) return "#f9a825";
+  if (nivel <= 7) return "#ef6c00";
+  return "#c62828";
+};
+
+export default function Aplicativo() {
+  const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(() => usuarioAtual());
+  const [divisoes, setDivisoes] = useState<string[]>([]);
+  const [atividades, setAtividades] = useState<string[]>([]);
+  const [ambientes, setAmbientes] = useState<string[]>([]);
+  const [indicadores, setIndicadores] = useState<Indicadores | null>(null);
+  const [resultado, setResultado] = useState<RespostaMissao | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(false);
+
+  const [formulario, setFormulario] = useState({
+    divisao: "",
+    projeto: "",
+    atividade: "",
+    ambiente: "",
+    latitude: -15.79,
+    longitude: -47.88,
+    tempoExposicaoHoras: 4,
+    climaSevero: false,
+    historicoAcidentesLocal: 0,
+  });
+
+  useEffect(() => {
+    listarCatalogo("divisoes").then((lista) => {
+      setDivisoes(lista);
+      setFormulario((f) => ({ ...f, divisao: lista[0] ?? "" }));
+    });
+    listarCatalogo("atividades").then((lista) => {
+      setAtividades(lista);
+      setFormulario((f) => ({ ...f, atividade: lista[0] ?? "" }));
+    });
+    listarCatalogo("ambientes").then((lista) => {
+      setAmbientes(lista);
+      setFormulario((f) => ({ ...f, ambiente: lista[0] ?? "" }));
+    });
+  }, []);
+
+  useEffect(() => {
+    if (usuario) recarregarIndicadores();
+  }, [usuario]);
+
+  function recarregarIndicadores() {
+    buscarIndicadores()
+      .then(setIndicadores)
+      .catch(() => setUsuario(usuarioAtual()));
+  }
+
+  async function aoSair() {
+    await logout();
+    setUsuario(null);
+    setIndicadores(null);
+  }
+
+  async function aoEnviar(evento: React.FormEvent) {
+    evento.preventDefault();
+    setErro(null);
+    setCarregando(true);
+    try {
+      const resposta = await criarMissao(formulario);
+      setResultado(resposta);
+      recarregarIndicadores();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Erro desconhecido");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  if (!usuario) {
+    return <TelaLogin aoAutenticar={setUsuario} />;
+  }
+
+  return (
+    <div className="pagina">
+      <header className="cabecalho">
+        <div className="cabecalho__linha-topo">
+          <div>
+            <h1>Segurança nas Saídas de Campo</h1>
+            <p>Edital CPSI nº 0001/2026 (CPRM/SGB) — painel de gestor + geração de plano de risco.</p>
+          </div>
+          <div className="cabecalho__usuario">
+            <span>{usuario.nome}</span>
+            <button type="button" className="botao-sair" onClick={aoSair}>
+              Sair
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {indicadores && <PainelIndicadores indicadores={indicadores} />}
+
+      <main className="conteudo-principal">
+        <form onSubmit={aoEnviar} className="formulario-missao">
+          <h2>Nova missão de campo</h2>
+
+          <label>
+            Divisão
+            <select
+              value={formulario.divisao}
+              onChange={(e) => setFormulario({ ...formulario, divisao: e.target.value })}
+            >
+              {divisoes.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Projeto / missão
+            <input
+              value={formulario.projeto}
+              onChange={(e) => setFormulario({ ...formulario, projeto: e.target.value })}
+              placeholder="Ex.: Mapeamento geológico - Serra do Espinhaço"
+              required
+            />
+          </label>
+
+          <label>
+            Atividade
+            <select
+              value={formulario.atividade}
+              onChange={(e) => setFormulario({ ...formulario, atividade: e.target.value })}
+            >
+              {atividades.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Ambiente
+            <select
+              value={formulario.ambiente}
+              onChange={(e) => setFormulario({ ...formulario, ambiente: e.target.value })}
+            >
+              {ambientes.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Tempo de exposição estimado (horas)
+            <input
+              type="number"
+              min={1}
+              max={24}
+              value={formulario.tempoExposicaoHoras}
+              onChange={(e) => setFormulario({ ...formulario, tempoExposicaoHoras: Number(e.target.value) })}
+            />
+          </label>
+
+          <label className="rotulo-checkbox">
+            <input
+              type="checkbox"
+              checked={formulario.climaSevero}
+              onChange={(e) => setFormulario({ ...formulario, climaSevero: e.target.checked })}
+            />
+            Alerta meteorológico severo previsto (INMET/Defesa Civil)
+          </label>
+
+          <button type="submit" disabled={carregando}>
+            {carregando ? "Analisando..." : "Gerar plano de risco"}
+          </button>
+
+          {erro && <p className="mensagem-erro">{erro}</p>}
+        </form>
+
+        <div className="painel-resultado">
+          <h2>Resultado da análise</h2>
+          {!resultado && <p className="texto-vazio">Preencha o formulário para gerar o plano de risco.</p>}
+          {resultado && (
+            <div className="cartao-resultado">
+              <p>
+                <strong>Nível de risco:</strong>{" "}
+                <span
+                  className="etiqueta-nivel"
+                  style={{ background: corDoNivel(resultado.analise.nivelRisco) }}
+                >
+                  {resultado.analise.nivelRisco}/10 — {resultado.analise.classificacao}
+                </span>
+              </p>
+
+              <h3>Riscos identificados</h3>
+              <ul>
+                {resultado.analise.riscosIdentificados.map((r) => (
+                  <li key={r}>{r}</li>
+                ))}
+              </ul>
+
+              <h3>EPIs recomendados</h3>
+              <ul>
+                {resultado.analise.episRecomendados.map((epi) => (
+                  <li key={epi.codigo}>
+                    <strong>{epi.nome}</strong> — {epi.uso}
+                  </li>
+                ))}
+              </ul>
+
+              <h3>Medidas administrativas</h3>
+              <ul>
+                {resultado.analise.medidasAdministrativas.map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
+
+              <h3>Pontos de apoio próximos</h3>
+              <ul>
+                {resultado.pontosDeApoio.map((p) => (
+                  <li key={p.nome}>
+                    {p.nome} ({p.tipo}) — {p.distanciaKm} km — tel: {p.telefone}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="acoes-relatorio">
+                <a href={urlRelatorioPdf(resultado.id)} target="_blank" rel="noreferrer">
+                  Baixar PDF
+                </a>
+                <a href={urlRelatorioDocx(resultado.id)} target="_blank" rel="noreferrer">
+                  Baixar DOCX
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

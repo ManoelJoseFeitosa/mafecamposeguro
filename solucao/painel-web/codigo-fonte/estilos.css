@@ -1,0 +1,265 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: #fafafa;
+  color: #1a1a1a;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.pagina {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+
+.cabecalho h1 {
+  margin: 0 0 4px;
+  font-size: clamp(22px, 5vw, 30px);
+}
+
+.cabecalho p {
+  color: #555;
+  margin: 0 0 20px;
+  font-size: 14px;
+}
+
+.grade-indicadores {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.cartao-indicador {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 18px;
+  min-width: 140px;
+  flex: 1 1 140px;
+  background: #fff;
+}
+
+.cartao-indicador__titulo {
+  font-size: 12px;
+  color: #777;
+}
+
+.cartao-indicador__valor {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.conteudo-principal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.formulario-missao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rotulo-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+input,
+select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px; /* >=16px evita zoom automático no iOS */
+  width: 100%;
+}
+
+button {
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 12px 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #90a4ae;
+  cursor: not-allowed;
+}
+
+.mensagem-erro {
+  color: #c62828;
+}
+
+.texto-vazio {
+  color: #777;
+}
+
+.cartao-resultado {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+}
+
+.etiqueta-nivel {
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+ul {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.acoes-relatorio {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.acoes-relatorio a {
+  background: #eef3fb;
+  color: #1565c0;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.cabecalho__linha-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cabecalho__usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #444;
+}
+
+.botao-sair {
+  background: transparent;
+  border: 1px solid #ccc;
+  color: #444;
+  padding: 6px 12px;
+  font-size: 13px;
+  width: auto;
+}
+
+.pagina-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.cartao-login {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 28px;
+  background: #fff;
+  max-width: 360px;
+  width: 100%;
+}
+
+.cartao-login h1 {
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+
+.cartao-login p {
+  color: #555;
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+.formulario-login {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.painel-indicadores {
+  margin-bottom: 24px;
+}
+
+.bloco-indicador {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.bloco-indicador h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.lista-classificacao,
+.lista-alertas {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.lista-classificacao li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.etiqueta-nivel--pequena {
+  padding: 1px 8px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+/* Responsividade — celular e telas estreitas: layout de 2 colunas vira 1 coluna */
+@media (max-width: 720px) {
+  .conteudo-principal {
+    grid-template-columns: 1fr;
+  }
+
+  .pagina {
+    padding: 14px 12px 40px;
+  }
+
+  .cartao-indicador {
+    min-width: 45%;
+  }
+
+  button {
+    width: 100%;
+  }
+}

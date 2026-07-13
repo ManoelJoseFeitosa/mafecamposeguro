@@ -1,0 +1,24 @@
+# Memória de trabalho do projeto (contém dados pessoais/bancários reais do
+# proponente — RG, CPF, conta bancária — nunca deve ir para um repositório
+# público). Fica só local, nunca commitado.
+CLAUDE.md
+
+# Documentos com dados pessoais/bancários reais do proponente.
+documentacao/ANEXO_IV-A_Proposta_de_Precos_preenchido.docx
+documentacao/ANEXO_IV-B_Plano_de_Trabalho_preenchido.docx
+documentacao/fontes/cnpj-proponente-manoel-jose-feitosa-neto.pdf
+documentacao/fontes/curriculo-manoel-responsavel-tecnico.docx
+
+# App móvel tem seu próprio repositório git (criado pelo create-expo-app) —
+# não faz parte do deploy web e não deve ser versionado como submódulo
+# acidental dentro deste repositório.
+solucao/app-movel/
+
+# Artefatos de build/dependências (cada subprojeto já tem seu próprio
+# .gitignore para isso, isto é reforço na raiz).
+node_modules/
+vendor/
+dist/
+*.log
+.DS_Store
+Thumbs.db
