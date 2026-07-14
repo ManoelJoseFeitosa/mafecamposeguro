@@ -12,15 +12,23 @@ namespace App\Servicos;
  * referência (ver CatalogoServico::PONTOS_DE_APOIO_MOCK); em produção, este
  * serviço vira um adapter que consulta bases públicas geolocalizadas
  * (CNES/DATASUS para saúde, SSP estaduais para segurança) buscando por
- * coordenada — o contrato de saída (nome, tipo, distânciaKm, coordenadas,
- * telefone) permanece o mesmo, então nada acima muda.
+ * coordenada — o contrato de saída (nome, tipo, distânciaKm, direção,
+ * coordenadas, telefone) permanece o mesmo, então nada acima muda.
+ *
+ * Além da distância, calcula o RUMO (bearing) em graus e o ponto cardeal —
+ * navegação básica offline (aponte a bússola do aparelho/mapa físico na
+ * direção indicada), sem depender de mapa com tiles/internet.
  */
 class PontosDeApoioServico
 {
     private const RAIO_TERRA_KM = 6371.0;
 
+    private const PONTOS_CARDEAIS = [
+        'Norte', 'Nordeste', 'Leste', 'Sudeste', 'Sul', 'Sudoeste', 'Oeste', 'Noroeste',
+    ];
+
     /**
-     * @return array<int, array{nome: string, tipo: string, distanciaKm: float, latitude: float, longitude: float, telefone: string}>
+     * @return array<int, array{nome: string, tipo: string, distanciaKm: float, direcaoGraus: float, direcaoCardinal: string, latitude: float, longitude: float, telefone: string}>
      */
     public function buscar(float $latitude, float $longitude, float $raioKm = 60.0): array
     {
@@ -28,11 +36,14 @@ class PontosDeApoioServico
             ->map(function (array $ponto) use ($latitude, $longitude) {
                 $pontoLat = $latitude + $ponto['delta_lat'];
                 $pontoLng = $longitude + $ponto['delta_lng'];
+                $direcaoGraus = $this->direcaoGraus($latitude, $longitude, $pontoLat, $pontoLng);
 
                 return [
                     'nome' => $ponto['nome'],
                     'tipo' => $ponto['tipo'],
                     'distanciaKm' => round($this->distanciaHaversineKm($latitude, $longitude, $pontoLat, $pontoLng), 1),
+                    'direcaoGraus' => round($direcaoGraus),
+                    'direcaoCardinal' => $this->direcaoCardinal($direcaoGraus),
                     'latitude' => round($pontoLat, 6),
                     'longitude' => round($pontoLng, 6),
                     'telefone' => $ponto['telefone'],
@@ -54,5 +65,26 @@ class PontosDeApoioServico
             + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
 
         return self::RAIO_TERRA_KM * 2 * atan2(sqrt($a), sqrt(1 - $a));
+    }
+
+    /** Rumo inicial (bearing) em graus (0–360, 0 = Norte) de um ponto a outro. */
+    private function direcaoGraus(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $lat1r = deg2rad($lat1);
+        $lat2r = deg2rad($lat2);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $y = sin($dLng) * cos($lat2r);
+        $x = cos($lat1r) * sin($lat2r) - sin($lat1r) * cos($lat2r) * cos($dLng);
+
+        return fmod(rad2deg(atan2($y, $x)) + 360, 360);
+    }
+
+    /** Converte graus (0–360) no ponto cardeal/colateral mais próximo. */
+    private function direcaoCardinal(float $graus): string
+    {
+        $indice = ((int) round($graus / 45)) % 8;
+
+        return self::PONTOS_CARDEAIS[$indice];
     }
 }

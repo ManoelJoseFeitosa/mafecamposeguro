@@ -11,11 +11,12 @@ import {
   urlRelatorioPdf,
 } from "./cliente-api";
 import GerenciarUsuarios from "./componentes/GerenciarUsuarios";
+import ListaMissoes from "./componentes/ListaMissoes";
 import PainelIndicadores from "./componentes/PainelIndicadores";
 import TelaLogin from "./componentes/TelaLogin";
 import { Colaborador, Indicadores, RespostaMissao } from "./tipos";
 
-type Aba = "missoes" | "usuarios";
+type Aba = "nova-missao" | "missoes" | "usuarios";
 
 const corDoNivel = (nivel: number) => {
   if (nivel <= 2) return "#2e7d32";
@@ -26,7 +27,7 @@ const corDoNivel = (nivel: number) => {
 
 export default function Aplicativo() {
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(() => usuarioAtual());
-  const [aba, setAba] = useState<Aba>("missoes");
+  const [aba, setAba] = useState<Aba>("nova-missao");
   const [divisoes, setDivisoes] = useState<string[]>([]);
   const [atividades, setAtividades] = useState<string[]>([]);
   const [ambientes, setAmbientes] = useState<string[]>([]);
@@ -107,8 +108,8 @@ export default function Aplicativo() {
       <header className="cabecalho">
         <div className="cabecalho__linha-topo">
           <div>
-            <h1>Segurança nas Saídas de Campo</h1>
-            <p>Edital CPSI nº 0001/2026 (CPRM/SGB) — painel de gestor + geração de plano de risco.</p>
+            <h1>MAFE Campo Seguro</h1>
+            <p>Painel de gestão de risco ocupacional e definição de EPIs para saídas de campo.</p>
           </div>
           <div className="cabecalho__usuario">
             <span>{usuario.nome}</span>
@@ -120,10 +121,17 @@ export default function Aplicativo() {
         <nav className="abas">
           <button
             type="button"
+            className={aba === "nova-missao" ? "aba aba--ativa" : "aba"}
+            onClick={() => setAba("nova-missao")}
+          >
+            Nova missão
+          </button>
+          <button
+            type="button"
             className={aba === "missoes" ? "aba aba--ativa" : "aba"}
             onClick={() => setAba("missoes")}
           >
-            Missões e riscos
+            Missões
           </button>
           <button
             type="button"
@@ -138,6 +146,10 @@ export default function Aplicativo() {
       {aba === "usuarios" ? (
         <main className="conteudo-principal conteudo-principal--unico">
           <GerenciarUsuarios perfilAtual={usuario.perfil} />
+        </main>
+      ) : aba === "missoes" ? (
+        <main className="conteudo-principal conteudo-principal--unico">
+          <ListaMissoes colaboradores={colaboradores} />
         </main>
       ) : (
         <>
@@ -299,7 +311,7 @@ export default function Aplicativo() {
               <ul>
                 {resultado.pontosDeApoio.map((p) => (
                   <li key={p.nome}>
-                    {p.nome} ({p.tipo}) — {p.distanciaKm} km — tel: {p.telefone}
+                    {p.nome} ({p.tipo}) — {p.distanciaKm} km ao {p.direcaoCardinal} ({p.direcaoGraus}°) — tel: {p.telefone}
                   </li>
                 ))}
               </ul>

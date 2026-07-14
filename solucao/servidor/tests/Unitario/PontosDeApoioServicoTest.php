@@ -21,6 +21,13 @@ class PontosDeApoioServicoTest extends TestCase
             $this->assertArrayHasKey('latitude', $ponto);
             $this->assertArrayHasKey('longitude', $ponto);
             $this->assertGreaterThan(0, $ponto['distanciaKm']);
+            // Direção (rumo) para navegação offline: 0-360 graus e ponto cardeal.
+            $this->assertArrayHasKey('direcaoGraus', $ponto);
+            $this->assertGreaterThanOrEqual(0, $ponto['direcaoGraus']);
+            $this->assertLessThan(360, $ponto['direcaoGraus']);
+            $this->assertContains($ponto['direcaoCardinal'], [
+                'Norte', 'Nordeste', 'Leste', 'Sudeste', 'Sul', 'Sudoeste', 'Oeste', 'Noroeste',
+            ]);
         }
     }
 

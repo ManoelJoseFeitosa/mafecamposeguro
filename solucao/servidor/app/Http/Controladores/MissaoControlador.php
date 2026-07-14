@@ -116,6 +116,26 @@ class MissaoControlador extends Controlador
         ], RespostaHttp::HTTP_CREATED);
     }
 
+    /**
+     * Vincula (ou desvincula, se colaboradorId vier nulo) um colaborador a uma
+     * missão já existente. Rota protegida (gestor/superadmin) — ver routes/api.php.
+     */
+    public function atualizarColaborador(Request $requisicao, Missao $missao): JsonResponse
+    {
+        $dados = $requisicao->validate([
+            'colaboradorId' => ['nullable', 'integer', 'exists:usuarios,id'],
+        ]);
+
+        $missao->update(['colaborador_id' => $dados['colaboradorId'] ?? null]);
+        $missao->refresh();
+
+        return response()->json([
+            'id' => $missao->id,
+            'colaboradorId' => $missao->colaborador_id,
+            'colaboradorNome' => $missao->colaborador?->nome,
+        ]);
+    }
+
     public function relatorioPdf(Missao $missao): Response
     {
         $analise = $this->reanalisar($missao);

@@ -7,54 +7,45 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * BUSCA de colaboradores (usuários de campo) ativos para a identificação no app.
+ * Identificação de UM colaborador (usuário de campo) pela MATRÍCULA EXATA,
+ * para o app de campo (sem login).
  *
- * Rota PÚBLICA de propósito: o app de campo não tem login (decisão de escopo —
- * o offline-first não deve depender de sessão). Mas, para escalar até os 1.200+
- * usuários do edital SEM virar uma lista rolável gigante — e sem despejar o
- * diretório inteiro de nomes numa rota sem autenticação (fraco para a LGPD) —,
- * a identificação é por CORRESPONDÊNCIA EXATA: o colaborador digita o nome
- * completo OU a matrícula completa e recebe o(s) cadastro(s) correspondente(s).
- * Não faz busca por prefixo/trecho de propósito — evita que digitar 1-2
- * caracteres liste vários nomes (enumeração do diretório), reforçando a LGPD.
- * Exige ao menos 2 caracteres; sem termo devolve lista vazia. Expõe só nome,
+ * Rota PÚBLICA de propósito: o app não tem login (decisão de escopo — o
+ * offline-first não deve depender de sessão). A identificação é só por
+ * matrícula (campo obrigatório e único no cadastro) — nunca por nome — porque
+ * isso torna o resultado sempre 0 ou 1 registro: é IMPOSSÍVEL o colaborador
+ * ver o nome de outra pessoa, mesmo digitando parcialmente, pois nada é
+ * retornado até a matrícula completa bater exatamente. Expõe só nome,
  * matrícula e cargo — nunca e-mail, senha ou telefone.
  */
 class ColaboradorControlador extends Controlador
 {
-    private const MIN_BUSCA = 2;
-    private const LIMITE = 25;
+    private const MIN_MATRICULA = 2;
 
     public function listar(Request $requisicao): JsonResponse
     {
-        $busca = trim((string) $requisicao->query('busca', ''));
+        $matricula = trim((string) $requisicao->query('matricula', ''));
 
-        // Sem termo suficiente não retorna nada — evita a lista aberta completa.
-        if (mb_strlen($busca) < self::MIN_BUSCA) {
+        // Sem matrícula completa suficiente não retorna nada.
+        if (mb_strlen($matricula) < self::MIN_MATRICULA) {
             return response()->json([]);
         }
 
-        $termo = mb_strtolower($busca);
-
-        $colaboradores = Usuario::query()
+        $colaborador = Usuario::query()
             ->where('perfil', 'colaborador')
             ->where('ativo', true)
-            ->where(function ($consulta) use ($termo) {
-                // Igualdade exata (case-insensitive) — nome completo OU matrícula.
-                $consulta->whereRaw('LOWER(nome) = ?', [$termo])
-                    ->orWhereRaw('LOWER(matricula) = ?', [$termo]);
-            })
-            ->orderBy('nome')
-            ->limit(self::LIMITE)
-            ->get();
+            ->whereRaw('LOWER(matricula) = ?', [mb_strtolower($matricula)])
+            ->first();
 
-        return response()->json(
-            $colaboradores->map(fn (Usuario $c) => [
-                'id' => $c->id,
-                'nome' => $c->nome,
-                'matricula' => $c->matricula,
-                'cargo' => $c->cargo,
-            ])->all(),
-        );
+        if (! $colaborador) {
+            return response()->json([]);
+        }
+
+        return response()->json([[
+            'id' => $colaborador->id,
+            'nome' => $colaborador->nome,
+            'matricula' => $colaborador->matricula,
+            'cargo' => $colaborador->cargo,
+        ]]);
     }
 }

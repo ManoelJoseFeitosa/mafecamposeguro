@@ -119,4 +119,46 @@ class MissaoApiTest extends TestCase
         $lista->assertJsonPath('0.colaboradorId', $colaborador->id);
         $lista->assertJsonPath('0.colaboradorNome', 'Ana Ribeiro');
     }
+
+    public function test_gestor_pode_vincular_colaborador_a_missao_ja_existente(): void
+    {
+        $gestor = Usuario::factory()->create(['perfil' => 'gestor']);
+        $colaborador = Usuario::factory()->create(['perfil' => 'colaborador', 'nome' => 'Carlos Menezes']);
+
+        $criacao = $this->postJson('/api/missoes', [
+            'divisao' => 'DIHIBA',
+            'projeto' => 'Expedição sem responsável',
+            'atividade' => 'hidrometria_rio',
+            'ambiente' => 'rio_lago',
+            'latitude' => -14.2,
+            'longitude' => -42.7,
+        ]);
+        $criacao->assertJsonPath('colaboradorId', null);
+        $missaoId = $criacao->json('id');
+
+        $vinculo = $this->actingAs($gestor, 'sanctum')->putJson("/api/missoes/{$missaoId}/colaborador", [
+            'colaboradorId' => $colaborador->id,
+        ]);
+
+        $vinculo->assertOk();
+        $vinculo->assertJsonPath('colaboradorId', $colaborador->id);
+        $vinculo->assertJsonPath('colaboradorNome', 'Carlos Menezes');
+
+        $this->assertDatabaseHas('missoes', ['id' => $missaoId, 'colaborador_id' => $colaborador->id]);
+    }
+
+    public function test_vincular_colaborador_a_missao_exige_autenticacao(): void
+    {
+        $criacao = $this->postJson('/api/missoes', [
+            'divisao' => 'DIHIBA',
+            'projeto' => 'Expedição sem responsável',
+            'atividade' => 'hidrometria_rio',
+            'ambiente' => 'rio_lago',
+            'latitude' => -14.2,
+            'longitude' => -42.7,
+        ]);
+
+        $this->putJson("/api/missoes/{$criacao->json('id')}/colaborador", ['colaboradorId' => null])
+            ->assertUnauthorized();
+    }
 }

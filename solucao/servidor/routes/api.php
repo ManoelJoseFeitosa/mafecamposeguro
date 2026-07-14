@@ -22,8 +22,8 @@ Route::get('/catalogo/divisoes', [CatalogoControlador::class, 'divisoes'])->name
 Route::get('/catalogo/atividades', [CatalogoControlador::class, 'atividades'])->name('catalogo.atividades');
 Route::get('/catalogo/ambientes', [CatalogoControlador::class, 'ambientes'])->name('catalogo.ambientes');
 
-// Lista de colaboradores (usuários de campo) para o SELETOR do app móvel — sem
-// login, por decisão de escopo do offline-first (ver ColaboradorControlador).
+// Identificação de UM colaborador por matrícula EXATA (?matricula=), para o
+// app móvel sem login — nunca retorna nome de terceiros (ver ColaboradorControlador).
 Route::get('/colaboradores', [ColaboradorControlador::class, 'listar'])->name('colaboradores.listar');
 
 Route::get('/missoes', [MissaoControlador::class, 'listar'])->name('missoes.listar');
@@ -51,5 +51,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/usuarios', [UsuarioControlador::class, 'armazenar'])->name('usuarios.armazenar');
         Route::put('/usuarios/{usuario}', [UsuarioControlador::class, 'atualizar'])->name('usuarios.atualizar');
         Route::delete('/usuarios/{usuario}', [UsuarioControlador::class, 'remover'])->name('usuarios.remover');
+
+        // Vincular/trocar o colaborador responsável por uma missão já existente.
+        Route::put('/missoes/{missao}/colaborador', [MissaoControlador::class, 'atualizarColaborador'])->name('missoes.atualizar-colaborador');
     });
 });

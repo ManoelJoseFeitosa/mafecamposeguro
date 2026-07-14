@@ -1,4 +1,4 @@
-import { Colaborador, Indicadores, PerfilUsuario, RespostaMissao, Usuario } from "./tipos";
+import { Colaborador, Indicadores, MissaoResumo, PerfilUsuario, RespostaMissao, Usuario } from "./tipos";
 
 const BASE = "/api";
 const CHAVE_SESSAO = "cpsi2026.sessao";
@@ -191,8 +191,38 @@ export async function removerUsuario(id: number): Promise<void> {
   if (!res.ok) throw new Error(await extrairMensagemErro(res, "Falha ao remover usuário."));
 }
 
+/**
+ * Lista de colaboradores para os SELETORES do painel (atribuir responsável na
+ * missão, vincular na aba Missões). Usa a rota AUTENTICADA de usuários — a
+ * rota pública /api/colaboradores é só para o app de campo identificar A SI
+ * MESMO por matrícula exata (nunca lista todos, ver ColaboradorControlador).
+ */
 export async function listarColaboradores(): Promise<Colaborador[]> {
-  const res = await fetch(`${BASE}/colaboradores`, { headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error("Falha ao listar colaboradores.");
+  const usuarios = await listarUsuarios();
+  return usuarios
+    .filter((u) => u.perfil === "colaborador" && u.ativo)
+    .map((u) => ({ id: u.id, nome: u.nome, matricula: u.matricula, cargo: u.cargo }));
+}
+
+// ---------------------------------------------------------------------------
+// Missões — listagem e vínculo de colaborador (aba "Missões").
+// ---------------------------------------------------------------------------
+
+export async function listarMissoes(): Promise<MissaoResumo[]> {
+  const res = await fetch(`${BASE}/missoes`, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error("Falha ao listar missões.");
+  return res.json();
+}
+
+export async function vincularColaboradorMissao(
+  missaoId: number,
+  colaboradorId: number | null,
+): Promise<MissaoResumo> {
+  const res = await fetch(`${BASE}/missoes/${missaoId}/colaborador`, {
+    method: "PUT",
+    headers: { ...cabecalhosAutenticados(), "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ colaboradorId }),
+  });
+  if (!res.ok) throw new Error(await extrairMensagemErro(res, "Falha ao vincular colaborador à missão."));
   return res.json();
 }

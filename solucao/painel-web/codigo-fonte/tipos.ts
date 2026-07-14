@@ -19,6 +19,8 @@ export interface PontoDeApoio {
   nome: string;
   tipo: string;
   distanciaKm: number;
+  direcaoGraus: number;
+  direcaoCardinal: string;
   latitude: number;
   longitude: number;
   telefone: string;
@@ -32,6 +34,19 @@ export interface RespostaMissao {
   colaboradorNome: string | null;
   analise: ResultadoAnaliseRisco;
   pontosDeApoio: PontoDeApoio[];
+}
+
+/** Item da listagem de missões (aba "Missões" — vínculo de colaborador). */
+export interface MissaoResumo {
+  id: number;
+  projeto: string;
+  divisao: string;
+  latitude: number;
+  longitude: number;
+  colaboradorId: number | null;
+  colaboradorNome: string | null;
+  analise: ResultadoAnaliseRisco;
+  atualizadoEm: string | null;
 }
 
 export type PerfilUsuario = "superadmin" | "gestor" | "colaborador";
