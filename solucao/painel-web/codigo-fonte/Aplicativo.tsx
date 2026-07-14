@@ -312,6 +312,14 @@ export default function Aplicativo() {
                 {resultado.pontosDeApoio.map((p) => (
                   <li key={p.nome}>
                     {p.nome} ({p.tipo}) — {p.distanciaKm} km ao {p.direcaoCardinal} ({p.direcaoGraus}°) — tel: {p.telefone}
+                    {" — "}
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}&travelmode=driving`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      ver no mapa
+                    </a>
                   </li>
                 ))}
               </ul>
