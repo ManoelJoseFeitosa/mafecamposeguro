@@ -28,7 +28,7 @@ export default function TelaLogin({ aoAutenticar }: PropriedadesTelaLogin) {
   return (
     <div className="pagina pagina-login">
       <div className="cartao-login">
-        <h1>CPSI 2026 — Painel do Gestor</h1>
+        <h1>MAFE Campo Seguro — Painel do Gestor</h1>
         <p>Entre com sua conta de gestor para acessar os indicadores da missão.</p>
         <form onSubmit={aoEnviar} className="formulario-login">
           <label>
