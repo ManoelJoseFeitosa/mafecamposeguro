@@ -302,6 +302,26 @@ ul {
   color: #2e7d32;
 }
 
+.filtros-lista-missoes {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filtros-lista-missoes input {
+  flex: 2;
+}
+
+.filtros-lista-missoes select {
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  .filtros-lista-missoes {
+    flex-direction: column;
+  }
+}
+
 .tabela-usuarios {
   width: 100%;
   border-collapse: collapse;
