@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Usuario::firstOrCreate(
-            ['email' => 'admin@cpsi2026.local'],
+            ['email' => 'manoelbd2012@gmail.com'],
             [
                 'nome' => 'Administrador Geral',
-                'senha' => Hash::make('cpsi2026-admin'),
+                'senha' => Hash::make('Mf@871277'),
                 'perfil' => 'superadmin',
                 'ativo' => true,
             ],
