@@ -23,6 +23,8 @@ export default function ListaMissoes({ colaboradores }: PropriedadesListaMissoes
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [salvandoId, setSalvandoId] = useState<number | null>(null);
+  const [filtroProjeto, setFiltroProjeto] = useState("");
+  const [filtroDivisao, setFiltroDivisao] = useState("");
 
   async function recarregar() {
     setCarregando(true);
@@ -58,13 +60,38 @@ export default function ListaMissoes({ colaboradores }: PropriedadesListaMissoes
     }
   }
 
+  const divisoesDisponiveis = Array.from(new Set(missoes.map((m) => m.divisao))).sort();
+
+  const missoesFiltradas = missoes.filter((m) => {
+    const projetoCombina = m.projeto.toLowerCase().includes(filtroProjeto.trim().toLowerCase());
+    const divisaoCombina = !filtroDivisao || m.divisao === filtroDivisao;
+    return projetoCombina && divisaoCombina;
+  });
+
   return (
     <section className="lista-missoes">
-      <h2>Missões registradas ({missoes.length})</h2>
+      <h2>Missões registradas ({missoesFiltradas.length}{missoesFiltradas.length !== missoes.length ? ` de ${missoes.length}` : ""})</h2>
       <p className="texto-auxiliar">
         Vincule ou troque o colaborador responsável por qualquer missão — inclusive as criadas
         diretamente pelo aplicativo de campo, sem atribuição inicial.
       </p>
+
+      <div className="filtros-lista-missoes">
+        <input
+          type="text"
+          placeholder="Filtrar por projeto..."
+          value={filtroProjeto}
+          onChange={(e) => setFiltroProjeto(e.target.value)}
+        />
+        <select value={filtroDivisao} onChange={(e) => setFiltroDivisao(e.target.value)}>
+          <option value="">Todas as divisões</option>
+          {divisoesDisponiveis.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {erro && <p className="mensagem-erro">{erro}</p>}
       {carregando && <p className="texto-vazio">Carregando missões...</p>}
@@ -80,7 +107,7 @@ export default function ListaMissoes({ colaboradores }: PropriedadesListaMissoes
             </tr>
           </thead>
           <tbody>
-            {missoes.map((m) => (
+            {missoesFiltradas.map((m) => (
               <tr key={m.id}>
                 <td>
                   <strong>{m.projeto}</strong>
@@ -114,6 +141,13 @@ export default function ListaMissoes({ colaboradores }: PropriedadesListaMissoes
               <tr>
                 <td colSpan={4} className="texto-vazio">
                   Nenhuma missão registrada ainda.
+                </td>
+              </tr>
+            )}
+            {missoes.length > 0 && missoesFiltradas.length === 0 && (
+              <tr>
+                <td colSpan={4} className="texto-vazio">
+                  Nenhuma missão encontrada com esses filtros.
                 </td>
               </tr>
             )}
