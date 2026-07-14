@@ -45,6 +45,19 @@ class UsuarioApiTest extends TestCase
         $this->assertDatabaseHas('usuarios', ['email' => 'maria.souza@exemplo.local', 'perfil' => 'colaborador']);
     }
 
+    public function test_colaborador_sem_matricula_e_rejeitado(): void
+    {
+        $admin = Usuario::factory()->create(['perfil' => 'superadmin']);
+
+        $this->actingAs($admin, 'sanctum')->postJson('/api/usuarios', [
+            'nome' => 'Sem Matricula',
+            'email' => 'sem.matricula@exemplo.local',
+            'senha' => 'segredo123',
+            'perfil' => 'colaborador',
+            // matrícula ausente de propósito
+        ])->assertUnprocessable()->assertJsonValidationErrors('matricula');
+    }
+
     public function test_superadmin_pode_criar_gestor(): void
     {
         $admin = Usuario::factory()->create(['perfil' => 'superadmin']);

@@ -157,11 +157,12 @@ export default function GerenciarUsuarios({ perfilAtual }: PropriedadesGerenciar
         {formulario.perfil === "colaborador" && (
           <div className="linha-dupla">
             <label>
-              Matrícula
+              Matrícula *
               <input
                 value={formulario.matricula}
                 onChange={(e) => setFormulario({ ...formulario, matricula: e.target.value })}
                 placeholder="Ex.: SGB-0001"
+                required
               />
             </label>
             <label>
