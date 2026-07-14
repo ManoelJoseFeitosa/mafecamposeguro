@@ -80,8 +80,10 @@ export default function Aplicativo() {
 
   async function aoSair() {
     await logout();
-    setUsuario(null);
-    setIndicadores(null);
+    // Sair leva de volta ao site (não à tela de login do painel) — a tela de
+    // login só deve aparecer quando o gestor clica em "Painel do Gestor" no
+    // site, não como destino automático após encerrar a sessão.
+    window.location.href = "/";
   }
 
   async function aoEnviar(evento: React.FormEvent) {
