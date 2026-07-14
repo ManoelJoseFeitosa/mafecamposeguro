@@ -54,7 +54,9 @@ class UsuarioControlador extends Controlador
             'email' => ['required', 'email', 'unique:usuarios,email'],
             'senha' => ['required', 'string', 'min:6'],
             'perfil' => ['required', 'string', Rule::in($gerenciaveis)],
-            'matricula' => ['nullable', 'string', 'max:50', 'unique:usuarios,matricula'],
+            // Matrícula é OBRIGATÓRIA para colaborador (é a chave de identificação
+            // no app, que é por matrícula/nome completo). Opcional p/ gestor/admin.
+            'matricula' => ['required_if:perfil,colaborador', 'nullable', 'string', 'max:50', 'unique:usuarios,matricula'],
             'cargo' => ['nullable', 'string', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:30'],
         ]);
@@ -83,7 +85,7 @@ class UsuarioControlador extends Controlador
             'email' => ['sometimes', 'email', Rule::unique('usuarios', 'email')->ignore($usuario->id)],
             'senha' => ['nullable', 'string', 'min:6'],
             'perfil' => ['sometimes', 'string', Rule::in($this->perfisGerenciaveis($solicitante))],
-            'matricula' => ['nullable', 'string', 'max:50', Rule::unique('usuarios', 'matricula')->ignore($usuario->id)],
+            'matricula' => ['required_if:perfil,colaborador', 'nullable', 'string', 'max:50', Rule::unique('usuarios', 'matricula')->ignore($usuario->id)],
             'cargo' => ['nullable', 'string', 'max:255'],
             'telefone' => ['nullable', 'string', 'max:30'],
             'ativo' => ['sometimes', 'boolean'],

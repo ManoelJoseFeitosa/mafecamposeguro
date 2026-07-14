@@ -104,6 +104,12 @@
             }
             .botao-primario:hover { background: var(--ambar-forte); }
 
+            .botao-desabilitado {
+                opacity: 0.5;
+                cursor: default;
+                pointer-events: none;
+            }
+
             .hero {
                 display: grid;
                 grid-template-columns: 1.1fr 0.9fr;
@@ -270,7 +276,12 @@
                 </div>
                 <nav>
                     <a class="botao-secundario" href="{{ config('mafe.url_painel_gestor') }}">Painel do Gestor</a>
-                    <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">Baixar o app (Android)</a>
+                    <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">Baixar (Android)</a>
+                    @if (config('mafe.url_app_ios'))
+                        <a class="botao-secundario" href="{{ config('mafe.url_app_ios') }}">Baixar (iOS)</a>
+                    @else
+                        <span class="botao-secundario botao-desabilitado">iOS (em breve)</span>
+                    @endif
                 </nav>
             </header>
 
@@ -285,8 +296,12 @@
                         relatório pronto para assinatura, tudo antes de a equipe deixar a base.
                     </p>
                     <div class="hero-acoes">
-                        <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">↓ Baixar o app Android</a>
-                        <a class="botao-secundario" href="{{ config('mafe.url_painel_gestor') }}">Painel do Gestor</a>
+                        <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">↓ Baixar para Android</a>
+                        @if (config('mafe.url_app_ios'))
+                            <a class="botao-primario" href="{{ config('mafe.url_app_ios') }}">↓ Baixar para iOS</a>
+                        @else
+                            <span class="botao-secundario botao-desabilitado">iOS (em breve)</span>
+                        @endif
                     </div>
                 </div>
                 <div class="cartao-escudo">
@@ -346,7 +361,7 @@
 
             <section class="baixar-app" id="baixar">
                 <div class="baixar-app__texto">
-                    <span class="selo">Aplicativo de campo · Android</span>
+                    <span class="selo">Aplicativo de campo · Android e iOS</span>
                     <h2>Leve o MAFE Campo Seguro para o campo</h2>
                     <p>
                         Instale o aplicativo no celular da equipe: registre missões com o GPS,
@@ -354,14 +369,21 @@
                         a sincronização acontece sozinha quando a conexão volta.
                     </p>
                     <ol class="passos-instalar">
-                        <li>Toque em <strong>Baixar o app</strong> abaixo para salvar o arquivo <code>.apk</code>.</li>
-                        <li>Ao abrir, o Android pode pedir para <strong>permitir instalar de esta fonte</strong> — confirme.</li>
-                        <li>Conclua a instalação e abra o app; escolha seu nome para começar.</li>
+                        <li>Toque no botão da sua plataforma para baixar o aplicativo.</li>
+                        <li>No Android, pode ser preciso <strong>permitir instalar de esta fonte</strong> — confirme.</li>
+                        <li>Conclua a instalação e abra o app; encontre seu cadastro para começar.</li>
                     </ol>
                     <div class="hero-acoes">
-                        <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">↓ Baixar o app Android (.apk)</a>
+                        <a class="botao-primario" href="{{ config('mafe.url_app_android') }}">↓ Baixar para Android</a>
+                        @if (config('mafe.url_app_ios'))
+                            <a class="botao-primario" href="{{ config('mafe.url_app_ios') }}">↓ Baixar para iOS</a>
+                        @else
+                            <span class="botao-secundario botao-desabilitado">iOS (em breve)</span>
+                        @endif
                     </div>
-                    <p class="nota-app">Compatível com Android. Para iPhone, use o Painel do Gestor pelo navegador.</p>
+                    @unless (config('mafe.url_app_ios'))
+                        <p class="nota-app">A versão iOS estará disponível em breve. No iPhone, use enquanto isso o Painel do Gestor pelo navegador.</p>
+                    @endunless
                 </div>
                 <div class="baixar-app__celular" aria-hidden="true">
                     <svg viewBox="0 0 150 300" fill="none" xmlns="http://www.w3.org/2000/svg">
